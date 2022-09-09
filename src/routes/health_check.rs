@@ -1,6 +1,6 @@
 use actix_web::{HttpResponse, Responder};
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Serialize)]
 pub struct HealthStatus {
     status: String,
 }
