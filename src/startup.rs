@@ -4,6 +4,7 @@ use crate::routes::{
 };
 use crate::AppStateWithCache;
 use actix_web::dev::Server;
+use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 use lru::LruCache;
 use std::net::TcpListener;
@@ -18,6 +19,7 @@ pub fn run(
     });
     let server = HttpServer::new(move || {
         App::new()
+            .wrap(Logger::default())
             .route("/", web::get().to(home))
             .route("/health", web::get().to(health_check))
             .route("/add", web::post().to(add_data))

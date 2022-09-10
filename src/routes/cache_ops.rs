@@ -13,12 +13,14 @@ pub async fn add_data(
 ) -> impl Responder {
     let mut cache = cache.get_cache().lock().unwrap();
     cache.put(form.key.clone(), form.value.clone());
+    log::info!("Added key {} with value {}", form.key, form.value);
     HttpResponse::Ok()
 }
 
 pub async fn clear_all_data(cache: web::Data<AppStateWithCache>) -> impl Responder {
     let mut cache = cache.get_cache().lock().unwrap();
     cache.clear();
+    log::warn!("Cache cleared. All values discarded");
     HttpResponse::Ok()
 }
 
@@ -33,7 +35,10 @@ pub async fn get_value_for_key(
             key,
             value: String::from(value),
         }),
-        None => HttpResponse::NotFound().finish(),
+        None => {
+            log::error!("Key {} not found in the cache", key);
+            HttpResponse::NotFound().finish()
+        }
     }
 }
 
@@ -45,6 +50,7 @@ pub async fn init_cache_with_size(
     let size = path.into_inner();
     cache.clear();
     cache.resize(size);
+    log::warn!("Cache resized to {}. All previous values discarded", size);
     HttpResponse::Ok()
 }
 
