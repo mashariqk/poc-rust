@@ -7,18 +7,6 @@ pub struct Cache {
     value: String,
 }
 
-pub async fn get_all_data(cache: web::Data<AppStateWithCache>) -> impl Responder {
-    let mut all_data = vec![];
-    let cache = cache.get_cache().lock().unwrap();
-    for (key, val) in cache.iter() {
-        all_data.push(Cache {
-            key: String::from(key),
-            value: String::from(val),
-        })
-    }
-    HttpResponse::Ok().json(all_data)
-}
-
 pub async fn add_data(
     form: web::Json<Cache>,
     cache: web::Data<AppStateWithCache>,
@@ -32,4 +20,35 @@ pub async fn clear_all_data(cache: web::Data<AppStateWithCache>) -> impl Respond
     let mut cache = cache.get_cache().lock().unwrap();
     cache.clear();
     HttpResponse::Ok()
+}
+
+pub async fn get_value_for_key(
+    path: web::Path<String>,
+    cache: web::Data<AppStateWithCache>,
+) -> impl Responder {
+    let key = path.into_inner();
+    let mut cache = cache.get_cache().lock().unwrap();
+    match cache.get(&key) {
+        Some(value) => HttpResponse::Ok().json(Cache {
+            key,
+            value: String::from(value),
+        }),
+        None => HttpResponse::NotFound().finish(),
+    }
+}
+
+pub async fn init_cache_with_size(
+    path: web::Path<usize>,
+    cache: web::Data<AppStateWithCache>,
+) -> impl Responder {
+    let mut cache = cache.get_cache().lock().unwrap();
+    let size = path.into_inner();
+    cache.clear();
+    cache.resize(size);
+    HttpResponse::Ok()
+}
+
+pub async fn cache_size(cache: web::Data<AppStateWithCache>) -> impl Responder {
+    let cache = cache.get_cache().lock().unwrap();
+    HttpResponse::Ok().json(cache.len())
 }
