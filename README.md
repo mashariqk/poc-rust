@@ -1,4 +1,4 @@
-# RUST PoC
+# RUST POC
 ## Proof Of Concept For Deploying Rust Apps Using Docker
 
 This is a basic poc which exposes a LRU cache over RESTful APIs using the actix-web framework. The lru cache starts with a capacity of 2 but it can be resize using the /init endpoint.
