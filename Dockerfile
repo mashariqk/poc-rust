@@ -1,4 +1,4 @@
-FROM rust:1.63 as builder
+FROM ekidd/rust-musl-builder:stable as builder
 
 RUN USER=root cargo new --bin poc-rust
 WORKDIR ./poc-rust
@@ -8,26 +8,27 @@ RUN rm src/*.rs
 
 ADD . ./
 
-RUN rm ./target/release/deps/poc_rust*
+RUN rm ./target/x86_64-unknown-linux-musl/release/deps/poc-rust*
 RUN cargo build --release
 
-FROM debian:buster-slim
-ARG APP=/usr/src/app
 
-RUN apt-get update \
-	&& apt-get install -y ca-certificates tzdata \
-	&& rm -rf /var/lib/apt/lists/*
+FROM alpine:latest
+
+ARG APP=/usr/src/app
 
 EXPOSE 9001
 
 ENV TZ=Etc/UTC \
     APP_USER=appuser
 
-RUN groupadd $APP_USER \
-	&& useradd -g $APP_USER $APP_USER \
-	&& mkdir -p ${APP}
+RUN addgroup -S $APP_USER \
+    && adduser -S -g $APP_USER $APP_USER
 
-COPY --from=builder /poc-rust/target/release/poc-rust ${APP}/poc-rust
+RUN apk update \
+    && apk add --no-cache ca-certificates tzdata \
+    && rm -rf /var/cache/apk/*
+
+COPY --from=builder /home/rust/src/poc-rust/target/x86_64-unknown-linux-musl/release/poc-rust ${APP}/poc-rust
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
 
