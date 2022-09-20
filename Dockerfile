@@ -8,7 +8,7 @@ RUN rm src/*.rs
 
 ADD . ./
 
-RUN rm ./target/x86_64-unknown-linux-musl/release/deps/poc-rust*
+RUN rm ./target/x86_64-unknown-linux-musl/release/deps/poc_rust*
 RUN cargo build --release
 
 
